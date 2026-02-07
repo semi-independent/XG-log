@@ -1,0 +1,3 @@
+=== XG-log SEND ===
+ROOT: C:\XG\repo\XG-log
+DROP: C:\XG\repo\XG-log\drop
