@@ -1,6 +1,0 @@
-=== XG-log SEND ===
-ROOT: C:\XG\repo\XG-log
-DROP: C:\XG\repo\XG-log\drop
-DEST: C:\XG\repo\XG-log\archive\2026-02-07_223342
-
-. ‚ÌŽg‚¢•û‚ªŒë‚Á‚Ä‚¢‚Ü‚·B

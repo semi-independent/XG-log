@@ -1,0 +1,13 @@
+# transient
+_send.lock
+_send.log
+_send_debug*.txt
+
+# optional: if you don't want helper scripts tracked
+run_send.cmd
+send_xglog.bat
+XG-log_send_V2_DIAG.bat
+
+# drop is staging area (keep folder, ignore contents)
+drop/*
+!drop/.keep
