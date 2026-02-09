@@ -1,4 +1,3 @@
-:: C:\XG\repo\XG-log\XG-log_send.bat
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -100,7 +99,21 @@ if not "%PUSH_RC%"=="0" (
 
 REM ----- 5) cleanup drop only after archive commit attempt -----
 echo ---- cleanup drop ---->>"%LOG%"
-del /q "%DROP%\*" >nul 2>nul
+set "DROP_LEFT=0"
+for /l %%R in (1,1,3) do (
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "if(Test-Path '%DROP%'){Get-ChildItem -Path '%DROP%' -Force -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue}" >nul 2>nul
+  for /f %%C in ('dir /b /a:-d "%DROP%" 2^>nul ^| find /c /v ""') do set "DROP_LEFT=%%C"
+  if "!DROP_LEFT!"=="0" goto :drop_clean_ok
+  timeout /t 1 >nul 2>nul
+)
+
+:drop_clean_ok
+for /f %%C in ('dir /b /a:-d "%DROP%" 2^>nul ^| find /c /v ""') do set "DROP_LEFT=%%C"
+if "%DROP_LEFT%"=="0" (
+  echo [OK] drop cleanup done>>"%LOG%"
+) else (
+  echo [WARN] drop cleanup incomplete. files_left=%DROP_LEFT%>>"%LOG%"
+)
 
 echo [OK] archive created: %TS%>>"%LOG%"
 echo [SEND] [%date% %time%] END>>"%LOG%"
