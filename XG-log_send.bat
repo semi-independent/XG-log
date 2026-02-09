@@ -1,78 +1,109 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title XG LOG SEND V2 DIAG (MOV)
 
+REM ====== CONFIG ======
 set "REPO=C:\XG\repo\XG-log"
 set "DROP=%REPO%\drop"
 set "ARCH=%REPO%\archive"
 set "LOG=%REPO%\_send.log"
-set "LOCK=%REPO%\_send.lock"
 
-for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd_HHmmss'"`) do set "TS=%%T"
-set "DEST=%ARCH%\%TS%"
+REM archive folder name = ts
+for /f "tokens=1-3 delims=/ " %%a in ("%date%") do set "D=%%a-%%b-%%c"
+for /f "tokens=1-3 delims=:." %%a in ("%time%") do set "T=%%a%%b%%c"
+set "TS=%D%_%T%"
+set "DST=%ARCH%\%TS%"
 
-echo ================================================== >> "%LOG%"
-echo [V2_DIAG] [%date% %time%] START TS=%TS% >> "%LOG%"
+REM ====== START ======
+echo ==================================================>>"%LOG%"
+echo [SEND] [%date% %time%] START ts=%TS%>>"%LOG%"
 
-echo === V2_DIAG RUNNING ===
-echo Repo : %REPO%
-echo Drop : %DROP%
-echo Dest : %DEST%
-echo Log  : %LOG%
-echo.
-
-REM --- hard unlock (safe) ---
-if exist "%REPO%\_send_lock" rmdir /s /q "%REPO%\_send_lock" >nul 2>nul
-if exist "%LOCK%" del /f /q "%LOCK%" >nul 2>nul
-
-type nul > "%LOCK%"
-
-if not exist "%DROP%\" mkdir "%DROP%" >nul 2>nul
-if not exist "%ARCH%\" mkdir "%ARCH%" >nul 2>nul
-mkdir "%DEST%" >nul 2>nul
-
-echo [V2_DIAG] robocopy /MOV start >> "%LOG%"
-
-REM --- MOVE (copy+delete) ---
-robocopy "%DROP%" "%DEST%" *.log *.txt *.html *.png *.jpg *.jpeg /MOV /R:20 /W:2 /COPY:DAT /DCOPY:DAT /NFL /NDL /NP >> "%LOG%" 2>&1
-set "RC=%ERRORLEVEL%"
-echo [V2_DIAG] robocopy rc=%RC% >> "%LOG%"
-
-if %RC% GEQ 8 (
-  echo [V2_DIAG] ERROR robocopy failed rc=%RC% >> "%LOG%"
-  echo エラー：robocopy が失敗（rc=%RC%）。_send.log を見て。
-  goto :cleanup
+pushd "%REPO%" 1>nul 2>nul
+if errorlevel 1 (
+  echo [NG] cannot cd to REPO: %REPO%>>"%LOG%"
+  echo [SEND] END>>"%LOG%"
+  exit /b 1
 )
 
-echo [V2_DIAG] MOVE DONE >> "%LOG%"
-
-pushd "%REPO%"
-git add -A >> "%LOG%" 2>&1
-for /f %%S in ('git status --porcelain ^| find /c /v ""') do set "CHG=%%S"
-echo [V2_DIAG] git changes=%CHG% >> "%LOG%"
-
-if "%CHG%"=="0" (
-  echo [V2_DIAG] No changes >> "%LOG%"
-  echo Git更新なし（MOVEだけ成功）。OK。
+REM ----- 0) preflight -----
+if not exist "%DROP%\" (
+  echo [NG] drop missing: %DROP%>>"%LOG%"
+  echo [SEND] END>>"%LOG%"
   popd
-  goto :cleanup
+  exit /b 1
+)
+if not exist "%ARCH%\" mkdir "%ARCH%" >nul 2>nul
+
+REM drop empty check
+dir /a:-d "%DROP%" | findstr /r /c:"[0-9][0-9]* File" > "%TEMP%\_xg_drop_count.txt"
+set "DROP_EMPTY=0"
+findstr /c:" 0 File" "%TEMP%\_xg_drop_count.txt" >nul && set "DROP_EMPTY=1"
+if "%DROP_EMPTY%"=="1" (
+  echo [OK] drop is empty. nothing to send.>>"%LOG%"
+  echo [SEND] END>>"%LOG%"
+  popd
+  exit /b 0
 )
 
-git commit -m "log: %TS%" >> "%LOG%" 2>&1
-set "GIT_TERMINAL_PROMPT=0"
-for /f "delims=" %%B in ('git rev-parse --abbrev-ref HEAD') do set "BR=%%B"
-git push -u origin "%BR%" >> "%LOG%" 2>&1
-echo [V2_DIAG] PUSH DONE >> "%LOG%"
-popd
+REM ----- 1) sync before making archive (avoid push reject) -----
+echo ---- git fetch ---->>"%LOG%"
+git fetch>>"%LOG%" 2>&1
 
-echo [V2_DIAG] SUCCESS >> "%LOG%"
-echo 完了（V2_DIAG）。
+echo ---- git pull --rebase --autostash ---->>"%LOG%"
+git pull --rebase --autostash>>"%LOG%" 2>&1
 
-:cleanup
-del /f /q "%LOCK%" >nul 2>nul
-echo [V2_DIAG] END >> "%LOG%"
-echo.
-echo === V2_DIAG END ===
-pause
+REM ----- 2) create new archive folder and copy drop into it -----
+mkdir "%DST%" >nul 2>nul
+if not exist "%DST%\" (
+  echo [NG] cannot create archive folder: %DST%>>"%LOG%"
+  echo [SEND] END>>"%LOG%"
+  popd
+  exit /b 1
+)
+
+echo ---- copy drop -> archive\%TS% ---->>"%LOG%"
+copy /y "%DROP%\*" "%DST%\" >nul 2>nul
+
+REM verify copy
+set "COPIED_OK=0"
+dir /b "%DST%\" 1>nul 2>nul && set "COPIED_OK=1"
+if "%COPIED_OK%"=="0" (
+  echo [NG] archive folder empty after copy. abort.>>"%LOG%"
+  echo [SEND] END>>"%LOG%"
+  popd
+  exit /b 1
+)
+
+REM ----- 3) stage files and commit -----
+echo ---- git add ---->>"%LOG%"
+git add -A>>"%LOG%" 2>&1
+
+echo ---- git status (after add) ---->>"%LOG%"
+git status>>"%LOG%" 2>&1
+
+echo ---- git commit ---->>"%LOG%"
+git commit -m "log: %TS%">>"%LOG%" 2>&1
+
+REM ----- 4) push (with one auto-retry after sync) -----
+echo ---- git push ---->>"%LOG%"
+git push>>"%LOG%" 2>&1
+set "PUSH_RC=%errorlevel%"
+
+if not "%PUSH_RC%"=="0" (
+  echo [WARN] push failed. retry once after sync.>>"%LOG%"
+  echo ---- git fetch ---->>"%LOG%"
+  git fetch>>"%LOG%" 2>&1
+  echo ---- git pull --rebase --autostash ---->>"%LOG%"
+  git pull --rebase --autostash>>"%LOG%" 2>&1
+  echo ---- git push (retry) ---->>"%LOG%"
+  git push>>"%LOG%" 2>&1
+)
+
+REM ----- 5) cleanup drop only after archive commit attempt -----
+echo ---- cleanup drop ---->>"%LOG%"
+del /q "%DROP%\*" >nul 2>nul
+
+echo [OK] archive created: %TS%>>"%LOG%"
+echo [SEND] [%date% %time%] END>>"%LOG%"
+popd 1>nul 2>nul
 endlocal
 exit /b 0
