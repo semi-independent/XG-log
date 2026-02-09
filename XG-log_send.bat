@@ -1,3 +1,4 @@
+:: C:\XG\repo\XG-log\XG-log_send.bat
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -7,10 +8,8 @@ set "DROP=%REPO%\drop"
 set "ARCH=%REPO%\archive"
 set "LOG=%REPO%\_send.log"
 
-REM archive folder name = ts
-for /f "tokens=1-3 delims=/ " %%a in ("%date%") do set "D=%%a-%%b-%%c"
-for /f "tokens=1-3 delims=:." %%a in ("%time%") do set "T=%%a%%b%%c"
-set "TS=%D%_%T%"
+REM archive folder name = ts (locale-independent)
+for /f %%I in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-Date).ToString(\"yyyy-MM-dd_HHmmss\")"') do set "TS=%%I"
 set "DST=%ARCH%\%TS%"
 
 REM ====== START ======
@@ -34,9 +33,10 @@ if not exist "%DROP%\" (
 if not exist "%ARCH%\" mkdir "%ARCH%" >nul 2>nul
 
 REM drop empty check
-dir /a:-d "%DROP%" | findstr /r /c:"[0-9][0-9]* File" > "%TEMP%\_xg_drop_count.txt"
-set "DROP_EMPTY=0"
-findstr /c:" 0 File" "%TEMP%\_xg_drop_count.txt" >nul && set "DROP_EMPTY=1"
+set "DROP_COUNT=0"
+for /f %%C in ('dir /b /a:-d "%DROP%" 2^>nul ^| find /c /v ""') do set "DROP_COUNT=%%C"
+set "DROP_EMPTY=1"
+if not "%DROP_COUNT%"=="0" set "DROP_EMPTY=0"
 if "%DROP_EMPTY%"=="1" (
   echo [OK] drop is empty. nothing to send.>>"%LOG%"
   echo [SEND] END>>"%LOG%"

@@ -1,3 +1,4 @@
+:: C:\XG\repo\XG-log\XG-log_collect_to_drop.bat
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -31,14 +32,14 @@ if errorlevel 1 (
   goto :finalize
 )
 
-REM ----- 0) drop の古い結果を先に掃除（混在防止） -----
-del /q "%DROP%\RSLT_*" >nul 2>nul
+REM ----- 0) drop を全掃除（混在防止） -----
+del /q "%DROP%\*" >nul 2>nul
 
 REM ----- 1) 操作ログ (MT5\logs) -----
-call :collect_recent "%MT5%\logs" "*.log" "OPS_"
+call :collect_recent "%MT5%\logs" "*.log" "OPS_" "1"
 
 REM ----- 2) エキスパートログ (MT5\MQL5\Logs) -----
-call :collect_recent "%MT5%\MQL5\Logs" "*.log" "EA_"
+call :collect_recent "%MT5%\MQL5\Logs" "*.log" "EA_" "1"
 
 REM ----- 3) 口座履歴HTML・画像（RESULTSは“全部”集める：取りこぼし防止） -----
 call :collect_all "%RESULTS%" "*.html" "RSLT_"
@@ -124,6 +125,7 @@ exit /b 0
 set "SRC=%~1"
 set "MASK=%~2"
 set "PFX=%~3"
+set "DATED_ONLY=%~4"
 
 if not exist "%SRC%\" (
   echo [COLLECT] missing: %SRC% >> "%LOG%"
@@ -134,13 +136,20 @@ forfiles /p "%SRC%" /m "%MASK%" /d -%DAYS% /c "cmd /c echo @path" 2>nul > "%TEMP
 
 for /f "usebackq delims=" %%F in ("%TEMP%\_xg_collect_list.txt") do (
   set "FN=%%~nxF"
-  copy /y "%%~fF" "%DROP%\%PFX%!FN!" >nul 2>nul
+  set "BASE=%%~nF"
+  if "!DATED_ONLY!"=="1" (
+    echo(!BASE!| findstr /r "^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$" >nul
+    if not errorlevel 1 (
+      copy /y "%%~fF" "%DROP%\%PFX%!FN!" >nul 2>nul
+    )
+  ) else (
+    copy /y "%%~fF" "%DROP%\%PFX%!FN!" >nul 2>nul
+  )
 )
 
 echo [COLLECT] ok(recent): %SRC%\%MASK% -> drop (%PFX%) >> "%LOG%"
 del /q "%TEMP%\_xg_collect_list.txt" >nul 2>nul
 exit /b 0
-
 
 :collect_all
 set "SRC=%~1"
