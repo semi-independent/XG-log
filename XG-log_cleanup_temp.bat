@@ -21,6 +21,10 @@ for %%F in (
   "_diag_send.log"
   "_force_send.bat"
   "_force_send.log"
+  "XG-log_trace_mt5_source.bat"
+  "_trace_mt5_source.log"
+  "_trace_mt5_source_v2.log"
+  "_trace_mt5_source_v3.log"
 ) do (
   if exist "%%~F" (
     git rm -f "%%~F" >> "%LOG%" 2>&1

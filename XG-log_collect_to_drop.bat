@@ -70,13 +70,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$root='%TERM_ROOT%';" ^
   "$cand=Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue | ForEach-Object {" ^
   "  $opsDir=Join-Path $_.FullName 'logs';" ^
-  "  $ops=Get-ChildItem -Path $opsDir -File -Filter '*.log' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
+  "  $opsAll=Get-ChildItem -Path $opsDir -File -Filter '*.log' -ErrorAction SilentlyContinue;" ^
+  "  $opsDate=$opsAll | Where-Object { $_.Name -match '^\d{8}\.log$' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
+  "  $ops=if($opsDate){$opsDate}else{$opsAll | Sort-Object LastWriteTime -Descending | Select-Object -First 1};" ^
   "  if($ops){[PSCustomObject]@{Id=$_.Name;Path=$_.FullName;OpsName=$ops.Name;OpsTime=$ops.LastWriteTime;OpsSize=$ops.Length}}" ^
   "} | Sort-Object OpsTime -Descending;" ^
   "if(-not $cand){exit 3};" ^
   "$sel=$cand | Select-Object -First 1;" ^
   "$eaDir=Join-Path $sel.Path 'MQL5\Logs';" ^
-  "$ea=Get-ChildItem -Path $eaDir -File -Filter '*.log' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
+  "$eaAll=Get-ChildItem -Path $eaDir -File -Filter '*.log' -ErrorAction SilentlyContinue;" ^
+  "$eaDate=$eaAll | Where-Object { $_.Name -match '^\d{8}\.log$' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
+  "$ea=if($eaDate){$eaDate}else{$eaAll | Sort-Object LastWriteTime -Descending | Select-Object -First 1};" ^
   "$eaName='';$eaTime='';$eaSize=0;" ^
   "if($ea){$eaName=$ea.Name;$eaTime=$ea.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss');$eaSize=$ea.Length};" ^
   "$opsTime=$sel.OpsTime.ToString('yyyy-MM-dd HH:mm:ss');" ^
