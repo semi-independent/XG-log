@@ -1,4 +1,3 @@
-:: C:\XG\repo\XG-log\XG-log_collect_to_drop.bat
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -132,23 +131,26 @@ if not exist "%SRC%\" (
   exit /b 0
 )
 
-forfiles /p "%SRC%" /m "%MASK%" /d -%DAYS% /c "cmd /c echo @path" 2>nul > "%TEMP%\_xg_collect_list.txt"
+set "LIST=%TEMP%\_xg_collect_list_%RANDOM%%RANDOM%.txt"
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$src='%SRC%';$mask='%MASK%';$days=[int]%DAYS%;$dated='%DATED_ONLY%';" ^
+  "$cut=(Get-Date).Date.AddDays(-$days);" ^
+  "Get-ChildItem -Path $src -File -Filter $mask -ErrorAction SilentlyContinue |" ^
+  "  Where-Object { $_.LastWriteTime -ge $cut } |" ^
+  "  ForEach-Object {" ^
+  "    if($dated -eq '1'){" ^
+  "      if($_.BaseName -notmatch '^\d{8}$'){ return }" ^
+  "    }" ^
+  "    $_.FullName" ^
+  "  } | Set-Content -Path '%LIST%' -Encoding ascii" 1>nul 2>nul
 
-for /f "usebackq delims=" %%F in ("%TEMP%\_xg_collect_list.txt") do (
+for /f "usebackq delims=" %%F in ("%LIST%") do (
   set "FN=%%~nxF"
-  set "BASE=%%~nF"
-  if "!DATED_ONLY!"=="1" (
-    echo(!BASE!| findstr /r "^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$" >nul
-    if not errorlevel 1 (
-      copy /y "%%~fF" "%DROP%\%PFX%!FN!" >nul 2>nul
-    )
-  ) else (
-    copy /y "%%~fF" "%DROP%\%PFX%!FN!" >nul 2>nul
-  )
+  copy /y "%%~fF" "%DROP%\%PFX%!FN!" >nul 2>nul
 )
 
-echo [COLLECT] ok(recent): %SRC%\%MASK% -> drop (%PFX%) >> "%LOG%"
-del /q "%TEMP%\_xg_collect_list.txt" >nul 2>nul
+echo [COLLECT] ok(recent): %SRC%\%MASK% - (%PFX%) >> "%LOG%"
+del /q "%LIST%" >nul 2>nul
 exit /b 0
 
 :collect_all
