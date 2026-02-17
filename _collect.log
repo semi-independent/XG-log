@@ -1040,3 +1040,19 @@
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpg - (RSLT_) 
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpeg - (RSLT_) 
 [COLLECT] [2026/02/17 19:41:35.34] END 
+================================================== 
+[COLLECT] [2026/02/17 22:45:08.62] START 
+[COLLECT] TERM_ROOT=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal 
+[COLLECT] DAYS=2 
+[COLLECT] ACTIVE_ID=ED051E4A9BEE8A33BDDD0F947358B2B2 
+[COLLECT] ACTIVE_MT5=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2 
+[COLLECT] OPS_LATEST=20260217.log time=2026-02-17 22:44:04 size=3185570 
+[COLLECT] EA_LATEST=20260217.log time=2026-02-17 22:44:15 size=4599518 
+[COLLECT] ok(recent): C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\logs\*.log - (OPS_) 
+[COLLECT] ok(recent): C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\MQL5\Logs\*.log - (EA_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.html - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.htm - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.png - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpg - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpeg - (RSLT_) 
+[COLLECT] [2026/02/17 22:45:16.56] END 
