@@ -1360,3 +1360,32 @@
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpg - (RSLT_) 
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpeg - (RSLT_) 
 [COLLECT] [2026/02/26  7:13:17.54] END 
+================================================== 
+[COLLECT] [2026/02/26 13:31:24.84] START 
+[COLLECT] TERM_ROOT=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal 
+[COLLECT] TRIM_HOURS=12 
+[COLLECT] ACTIVE_ID=ED051E4A9BEE8A33BDDD0F947358B2B2 
+[COLLECT] ACTIVE_MT5=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2 
+[COLLECT] OPS_LATEST=20260226.log time=2026-02-26 13:31:06 size=538010 
+[COLLECT] EA_LATEST=20260226.log time=2026-02-26 13:30:48 size=6820644 
+[COLLECT] ok(recent): C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\logs\*.log - (OPS_) 
+[COLLECT] ok(recent): C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\MQL5\Logs\*.log - (EA_) 
+[COLLECT] trimming EA/OPS logs to last 12h ... 
+"3" 個の引数を指定して "WriteAllLines" を呼び出し中に例外が発生しました: "値を Null にすることはできません。
+パラメーター名:contents"
+発生場所 行:1 文字:706
++ ...      };     [System.IO.File]::WriteAllLines($f.FullName,$kept,$enc);  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : ArgumentNullException
+ 
+[TRIM] EA_20260225.log: 44218 -> 0 lines
+[TRIM] EA_20260226.log: 29313 -> 24964 lines
+[TRIM] OPS_20260226.log: 2542 -> 1862 lines
+[COLLECT] trim done 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.html - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.htm - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.png - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpg - (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend\*.jpeg - (RSLT_) 
+[COLLECT] [2026/02/26 13:31:38.83] END 

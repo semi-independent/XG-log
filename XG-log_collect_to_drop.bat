@@ -6,11 +6,11 @@ set "REPO=C:\XG\repo\XG-log"
 set "DROP=%REPO%\drop"
 set "TERM_ROOT=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal"
 
-REM Desktop “Results folder”
+REM Desktop "Results folder"
 set "RESULTS=C:\Users\Administrator\Desktop\XG_Results_ToSend"
 
-REM Collect time range (days) for LOGS only
-set "DAYS=2"
+REM Log trim: keep only last N hours of EA/OPS logs
+set "TRIM_HOURS=12"
 
 REM Log
 set "RUNID=%RANDOM%%RANDOM%"
@@ -21,7 +21,7 @@ set "META=%TEMP%\xg_collect_meta_%RUNID%.txt"
 echo ================================================== >> "%LOG%"
 echo [COLLECT] [%date% %time%] START >> "%LOG%"
 echo [COLLECT] TERM_ROOT=%TERM_ROOT% >> "%LOG%"
-echo [COLLECT] DAYS=%DAYS% >> "%LOG%"
+echo [COLLECT] TRIM_HOURS=%TRIM_HOURS% >> "%LOG%"
 
 if not exist "%DROP%\" mkdir "%DROP%" >nul 2>nul
 
@@ -40,7 +40,10 @@ call :collect_recent "%MT5%\logs" "*.log" "OPS_" "1"
 REM ----- 2) エキスパートログ (MT5\MQL5\Logs) -----
 call :collect_recent "%MT5%\MQL5\Logs" "*.log" "EA_" "1"
 
-REM ----- 3) 口座履歴HTML・画像（RESULTSは“全部”集める：取りこぼし防止） -----
+REM ----- 3) EA/OPS ログを直近%TRIM_HOURS%時間にトリム -----
+call :trim_drop_logs
+
+REM ----- 4) 口座履歴HTML・画像（RESULTSは"全部"集める：取りこぼし防止） -----
 call :collect_all "%RESULTS%" "*.html" "RSLT_"
 call :collect_all "%RESULTS%" "*.htm"  "RSLT_"
 call :collect_all "%RESULTS%" "*.png"  "RSLT_"
@@ -59,7 +62,7 @@ del /q "%META%" >nul 2>nul
 endlocal
 exit /b 0
 
-REM ====== SUB ======
+REM ====== SUB: resolve active MT5 ======
 :resolve_active_mt5
 if not exist "%TERM_ROOT%\" (
   echo [COLLECT] missing TERM_ROOT: %TERM_ROOT% >> "%LOG%"
@@ -120,6 +123,7 @@ if "!OPS_SIZE!"=="0" echo [COLLECT] WARN: latest OPS log size is 0 >> "%LOG%"
 if "!EA_SIZE!"=="0" echo [COLLECT] WARN: latest EA log size is 0 >> "%LOG%"
 exit /b 0
 
+REM ====== SUB: collect recent files ======
 :collect_recent
 set "SRC=%~1"
 set "MASK=%~2"
@@ -133,14 +137,12 @@ if not exist "%SRC%\" (
 
 set "LIST=%TEMP%\_xg_collect_list_%RANDOM%%RANDOM%.txt"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$src='%SRC%';$mask='%MASK%';$days=[int]%DAYS%;$dated='%DATED_ONLY%';" ^
-  "$cut=(Get-Date).Date.AddDays(-$days);" ^
+  "$src='%SRC%';$mask='%MASK%';$dated='%DATED_ONLY%';" ^
+  "$cut=(Get-Date).AddHours(-[int]%TRIM_HOURS%).Date;" ^
   "Get-ChildItem -Path $src -File -Filter $mask -ErrorAction SilentlyContinue |" ^
   "  Where-Object { $_.LastWriteTime -ge $cut } |" ^
   "  ForEach-Object {" ^
-  "    if($dated -eq '1'){" ^
-  "      if($_.BaseName -notmatch '^\d{8}$'){ return }" ^
-  "    }" ^
+  "    if($dated -eq '1'){ if($_.BaseName -notmatch '^\d{8}$'){ return } };" ^
   "    $_.FullName" ^
   "  } | Set-Content -Path '%LIST%' -Encoding ascii" 1>nul 2>nul
 
@@ -153,6 +155,7 @@ echo [COLLECT] ok(recent): %SRC%\%MASK% - (%PFX%) >> "%LOG%"
 del /q "%LIST%" >nul 2>nul
 exit /b 0
 
+REM ====== SUB: collect all files ======
 :collect_all
 set "SRC=%~1"
 set "MASK=%~2"
@@ -168,4 +171,34 @@ for /f "delims=" %%F in ('dir /b /a:-d "%SRC%\%MASK%" 2^>nul') do (
 )
 
 echo [COLLECT] ok(all): %SRC%\%MASK% -> drop (%PFX%) >> "%LOG%"
+exit /b 0
+
+REM ====== SUB: EA/OPS ログを直近N時間にトリム ======
+:trim_drop_logs
+echo [COLLECT] trimming EA/OPS logs to last %TRIM_HOURS%h ... >> "%LOG%"
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$drop='%DROP%'; $hours=[int]%TRIM_HOURS%;" ^
+  "$cutoff=(Get-Date).AddHours(-$hours);" ^
+  "Get-ChildItem -Path $drop -Filter '*.log' -ErrorAction SilentlyContinue |" ^
+  "  ForEach-Object {" ^
+  "    $f=$_;" ^
+  "    if($f.Name -notmatch '^(EA|OPS)_(\d{8})\.log$'){return};" ^
+  "    $fd=$matches[2];" ^
+  "    $enc=[System.Text.Encoding]::Unicode;" ^
+  "    $lines=[System.IO.File]::ReadAllLines($f.FullName,$enc);" ^
+  "    if(-not $lines -or $lines.Count -eq 0){return};" ^
+  "    $kept=$lines | Where-Object {" ^
+  "      if($_ -match '\t(\d{2}:\d{2}:\d{2})[.\t]'){" ^
+  "        try{" ^
+  "          $dt=[DateTime]::ParseExact($fd+' '+$Matches[1],'yyyyMMdd HH:mm:ss',$null);" ^
+  "          return($dt -ge $cutoff)" ^
+  "        }catch{return $true}" ^
+  "      }; return $true" ^
+  "    };" ^
+  "    [System.IO.File]::WriteAllLines($f.FullName,$kept,$enc);" ^
+  "    Write-Host ('[TRIM] '+$f.Name+': '+$lines.Count+' -> '+$kept.Count+' lines')" ^
+  "  }" >> "%LOG%" 2>&1
+
+echo [COLLECT] trim done >> "%LOG%"
 exit /b 0
