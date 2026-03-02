@@ -1590,3 +1590,23 @@
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
 [COLLECT] [2026/03/02 15:45:07.76] END 
+================================================== 
+[COLLECT] [2026/03/03  7:01:31.24] START 
+[COLLECT] TRIM_HOURS=12 
+[COLLECT] ACTIVE=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2 EA=20260303.log(size=1813090) 
+[COLLECT] copied: OPS_20260302.log 
+[COLLECT] copied: OPS_20260303.log 
+[TRIM] OPS_20260302.log 2028->842
+[TRIM] OPS_20260303.log 1370->1370
+[COLLECT] ok: C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\logs - (OPS_) 
+[COLLECT] copied: EA_20260302.log 
+[COLLECT] copied: EA_20260303.log 
+[TRIM] EA_20260302.log 18655->5738
+[TRIM] EA_20260303.log 8052->8052
+[COLLECT] ok: C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\MQL5\Logs - (EA_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] [2026/03/03  7:01:41.23] END 
