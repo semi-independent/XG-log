@@ -2284,3 +2284,29 @@
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
 [COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
 [COLLECT] [2026/03/13 19:03:19.60] END 
+================================================== 
+[COLLECT] [2026/03/13 23:22:20.34] START 
+[COLLECT] TRIM_HOURS=12 
+[COLLECT] ACTIVE=C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2 EA=20260313.log(size=2709058) 
+[COLLECT] copied: OPS_20260313.log 
+[TRIM] OPS_20260313.log 3198->1479
+[COLLECT] ok: C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\logs - (OPS_) 
+[COLLECT] copied: EA_20260312.log 
+[COLLECT] copied: EA_20260313.log 
+"3" 個の引数を指定して "WriteAllLines" を呼び出し中に例外が発生しました: "値を Null にすることはできません。
+パラメーター名:contents"
+発生場所 行:1 文字:696
++ ... true   };   [System.IO.File]::WriteAllLines($f.FullName,$kept,$enc);  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : ArgumentNullException
+ 
+[TRIM] EA_20260312.log 11399->0
+[TRIM] EA_20260313.log 13428->6254
+[COLLECT] ok: C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\ED051E4A9BEE8A33BDDD0F947358B2B2\MQL5\Logs - (EA_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] ok(all): C:\Users\Administrator\Desktop\XG_Results_ToSend (RSLT_) 
+[COLLECT] [2026/03/13 23:22:45.15] END 
